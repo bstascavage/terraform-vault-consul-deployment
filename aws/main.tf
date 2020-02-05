@@ -403,12 +403,9 @@ module "consul" {
   image_id          = var.ami_id != "" ? var.ami_id : data.aws_ami.latest-image.id
   name              = "${random_id.project_name.hex}-consul"
   health_check_type = "EC2"
-  max_size = "${terraform.workspace == "us-east-1" ? 5 : 1}"
-  min_size = "${terraform.workspace == "us-east-1" ? 5 : 1}"
-  desired_capacity = "${terraform.workspace == "us-east-1" ? 5 : 1}"
-  # max_size          = var.consul_cluster_size
-  # min_size          = var.consul_cluster_size
-  # desired_capacity  = var.consul_cluster_size
+  max_size          = "${terraform.workspace == "us-east-1" ? 5 : 1}"
+  min_size          = "${terraform.workspace == "us-east-1" ? 5 : 1}"
+  desired_capacity  = "${terraform.workspace == "us-east-1" ? 5 : 1}"
   instance_type     = "t2.small"
   #  vpc_id                      = module.vpc.vpc_id
   vpc_zone_identifier = module.vpc.public_subnets
@@ -534,12 +531,9 @@ module "vault" {
   image_id          = var.ami_id != "" ? var.ami_id : data.aws_ami.latest-image.id
   name              = "${random_id.project_name.hex}-vault"
   health_check_type = "EC2"
-  max_size = "${terraform.workspace == "us-east-1" ? 3 : 1}"
-  min_size = "${terraform.workspace == "us-east-1" ? 3 : 1}"
-  desired_capacity = "${terraform.workspace == "us-east-1" ? 3 : 1}"
-  # max_size          = var.vault_cluster_size
-  # min_size          = var.vault_cluster_size
-  # desired_capacity  = var.vault_cluster_size
+  max_size          = "${terraform.workspace == "us-east-1" ? 3 : 1}"
+  min_size          = "${terraform.workspace == "us-east-1" ? 3 : 1}"
+  desired_capacity  = "${terraform.workspace == "us-east-1" ? 3 : 1}"
   instance_type     = "t2.small"
   target_group_arns = [aws_lb_target_group.vault.arn]
   #  vpc_id                      = module.vpc.vpc_id
