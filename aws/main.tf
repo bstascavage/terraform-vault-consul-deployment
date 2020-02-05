@@ -24,11 +24,11 @@ module "bastion_vpc" {
   source = "terraform-aws-modules/vpc/aws"
   name   = "${random_id.project_name.hex}-bastion"
 
-  cidr = "10.1.0.0/16"
+  cidr = "172.${var.subnet_second_octet + 16}.0.0/16"
 
   azs             = [data.aws_availability_zones.available.names[0]]
-  private_subnets = ["10.1.1.0/24"]
-  public_subnets  = ["10.1.101.0/24"]
+  private_subnets = ["172.${var.subnet_second_octet + 16}.1.0/24"]
+  public_subnets  = ["172.${var.subnet_second_octet + 16}.101.0/24"]
 
   enable_nat_gateway = true
   single_nat_gateway = true
@@ -66,6 +66,7 @@ resource "aws_default_security_group" "bastion_default" {
 }
 
 resource "aws_instance" "bastion" {
+  count  = var.create_bastion ? 1 : 0
   ami           = data.aws_ami.latest-image.id
   instance_type = "t2.micro"
   subnet_id     = module.bastion_vpc.public_subnets[0]
@@ -78,11 +79,11 @@ module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
   name   = "${random_id.project_name.hex}-vpc"
 
-  cidr = "10.0.0.0/16"
+  cidr = "10.${var.subnet_second_octet}.0.0/16"
 
   azs             = data.aws_availability_zones.available.names
-  private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+  private_subnets = ["10.${var.subnet_second_octet}.1.0/24", "10.${var.subnet_second_octet}.2.0/24", "10.${var.subnet_second_octet}.3.0/24"]
+  public_subnets  = ["10.${var.subnet_second_octet}.101.0/24", "10.${var.subnet_second_octet}.102.0/24", "10.${var.subnet_second_octet}.103.0/24"]
 
   enable_nat_gateway = true
   single_nat_gateway = true
@@ -141,23 +142,24 @@ resource "aws_default_security_group" "vpc_default" {
 }
 
 resource "aws_vpc_peering_connection" "bastion_connectivity" {
+  count  = var.create_bastion ? 1 : 0
   peer_vpc_id = module.bastion_vpc.vpc_id
   vpc_id      = module.vpc.vpc_id
   auto_accept = true
 }
 
 resource "aws_route" "vpc" {
-  count                     = length(module.bastion_vpc.public_subnets_cidr_blocks)
+  count                     = var.create_bastion ? length(module.bastion_vpc.public_subnets_cidr_blocks) : 0
   route_table_id            = module.vpc.public_route_table_ids[0]
   destination_cidr_block    = element(module.bastion_vpc.public_subnets_cidr_blocks, count.index)
-  vpc_peering_connection_id = aws_vpc_peering_connection.bastion_connectivity.id
+  vpc_peering_connection_id = aws_vpc_peering_connection.bastion_connectivity[0].id
 }
 
 resource "aws_route" "bastion_vpc" {
-  count                     = length(module.vpc.public_subnets_cidr_blocks)
+  count                     = var.create_bastion ? length(module.vpc.public_subnets_cidr_blocks) : 0
   route_table_id            = module.bastion_vpc.public_route_table_ids[0]
   destination_cidr_block    = element(module.vpc.public_subnets_cidr_blocks, count.index)
-  vpc_peering_connection_id = aws_vpc_peering_connection.bastion_connectivity.id
+  vpc_peering_connection_id = aws_vpc_peering_connection.bastion_connectivity[0].id
 }
 
 
