@@ -33,6 +33,9 @@ module "bastion_vpc" {
   enable_nat_gateway = true
   single_nat_gateway = true
 
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+
   public_subnet_tags = {
     Name = "overridden-name-public"
   }
@@ -83,6 +86,9 @@ module "vpc" {
 
   enable_nat_gateway = true
   single_nat_gateway = true
+
+  enable_dns_hostnames = true
+  enable_dns_support   = true
 
   public_subnet_tags = {
     Name = "overridden-name-public"
@@ -488,8 +494,38 @@ module "compress_vault" {
       enable_acls                   = var.enable_acls,
       enable_consul_http_encryption = var.enable_consul_http_encryption,
       consul_backup_bucket          = aws_s3_bucket.consul_backups[0].id,
+      kms_key                       = aws_kms_key.vault.id
     },
   )
+}
+
+resource "aws_kms_key" "vault" {
+  description             = "Vault unseal key"
+  deletion_window_in_days = 10
+
+  tags = {
+    Name = "vault-kms-unseal-${random_id.project_name.hex}"
+  }
+}
+
+data "aws_iam_policy_document" "vault-kms-unseal" {
+  statement {
+    sid       = "VaultKMSUnseal"
+    effect    = "Allow"
+    resources = ["*"]
+
+    actions = [
+      "kms:Encrypt",
+      "kms:Decrypt",
+      "kms:DescribeKey",
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "kms_key" {
+  name   = "${random_id.project_name.id}-kms-key"
+  role   = aws_iam_role.instance_role.id
+  policy = data.aws_iam_policy_document.vault-kms-unseal.json
 }
 
 module "vault" {
