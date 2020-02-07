@@ -31,7 +31,7 @@ Initial operators will need to provision the cloud architecture for AWS, Consul,
 
 ### Operator Initialization
 
-The initial operator will need to setup the initial vault cluster while not exposing any new secrets.  To do that, the following procedures should be followed:
+The initial [operator](https://www.vaultproject.io/docs/commands/operator/init/) will need to setup the initial vault cluster while not exposing any new secrets.  To do that, the following procedures should be followed:
 
 1. `vault operator init -recovery-pgp-keys="keybase:bstascavage,keybase:jgrose" -recovery-shares=2 -recovery-threshold=2`
 
@@ -48,12 +48,12 @@ The initial operator will need to setup the initial vault cluster while not expo
 
 ### Misc Cluster Configuration
 
-* Audit logging is enabled, forwarding all requests to vault to syslog: `vault audit enable syslog`.
+* [Audit logging](https://www.vaultproject.io/docs/audit/syslog/) is enabled, forwarding all requests to vault to syslog: `vault audit enable syslog`.
 * For Phase One, readonly, security, and operations users were provisioned via the `userpass` auth method.
 
 ### Dynamic Database Configuration
 
-The `database` secrets engine was enabled to applications to get dynamic, rotated and leased temporary credentials.  This gives the application owners oppurtunity to limit blast radius', revoke any compromised keys, and control access to various databases.
+The [database](https://www.vaultproject.io/docs/secrets/databases/index.html) secrets engine was enabled to applications to get dynamic, rotated and leased temporary credentials.  This gives the application owners oppurtunity to limit blast radius', revoke any compromised keys, and control access to various databases.
 
 1.  Enable the database secrets engine: 
 
@@ -73,7 +73,7 @@ The `database` secrets engine was enabled to applications to get dynamic, rotate
 
 ### IAM Auth Configuration
 
-Given the high-density footprint that Veridian Dynamics has in Amazon Web Services, IAM authentication has been chosen as the application-level authentication method.  This allows the IAM role for a given EC2 or Lambda to be used to get the application's permission policy, allowing a secure mapping between the two.
+Given the high-density footprint that Veridian Dynamics has in Amazon Web Services, [IAM authentication](https://www.vaultproject.io/docs/auth/aws/) has been chosen as the application-level authentication method.  This allows the IAM role for a given EC2 or Lambda to be used to get the application's permission policy, allowing a secure mapping between the two.
 
 1.  Enable the auth method: 
 
@@ -91,7 +91,7 @@ Given the high-density footprint that Veridian Dynamics has in Amazon Web Servic
 
 ### Configuring the Vault Agent on the Application Server
 
-Each application server will run a Vault agent, a deamon that will communicate back to the Vault server.  This agent can auto-renew it's vault token and cache requests, both eliviating the responsibility for token renewal while reducing calls to the Vault API.  We will be using the application instances IAM role for authenication, so no Vault credentials will be stored or configured on the application servers.
+Each application server will run a Vault agent, a deamon that will communicate back to the Vault server.  This agent can [auto-renew](https://www.vaultproject.io/docs/agent/autoauth/index.html) it's vault token and cache requests, both eliviating the responsibility for token renewal while reducing calls to the Vault API.  We will be using the application instances IAM role for authenication, so no Vault credentials will be stored or configured on the application servers.
 
 We will provide ansible playbooks for installing and configuring the Vault agent.  The configuration is split into following [segments](https://www.vaultproject.io/docs/agent/):
 
