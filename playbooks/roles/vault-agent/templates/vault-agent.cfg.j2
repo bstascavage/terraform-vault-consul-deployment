@@ -1,0 +1,35 @@
+id_file = "./pidfile"
+
+vault { 
+        address = "http://10.50.102.254:8200"
+}
+
+auto_auth {
+   method "aws" {
+       mount_path = "auth/aws"
+       config = {
+           type = "iam"
+           role = "webapp-role-iam"
+       }
+   }
+  
+   sink "file" {
+       config = {
+           path = "approleToken"
+       }
+   }
+}
+
+template {
+  source      = "/opt/flask/mysqldbcreds.tmpl"
+  destination = "/opt/flask/mysqldbcreds.json"
+}
+
+listener "tcp" {
+        address = "127.0.0.1:8100"
+        tls_disable = true
+}
+
+cache {
+        use_auto_auth_token = true
+}

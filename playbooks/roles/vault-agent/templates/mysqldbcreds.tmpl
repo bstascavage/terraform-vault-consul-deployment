@@ -1,0 +1,7 @@
+{{ with secret "database/creds/webapp-access" }}
+{
+  "username": "{{ .Data.username }}",
+  "password": "{{ .Data.password }}",
+  "hostname": "terraform-20200206055322428700000006.c6kkrfyy5ys7.us-east-1.rds.amazonaws.com"
+}
+{{ end }}

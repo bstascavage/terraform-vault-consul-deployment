@@ -1,0 +1,5 @@
+---
+- name: Set vault config file
+  template:
+    src: vault-agent.cfg.j2
+    dest: "/opt/flask/vault-aws.hcl"
